@@ -1,6 +1,6 @@
 {
     "Group": "io.github.drakonforge",
-    "Name": "ExamplePlugin",
+    "Name": "LastChance",
     "Version": "1.0.0",
     "Description": "An example plugin for Hytale modding.",
     "Authors": [
@@ -9,11 +9,15 @@
             "Url": "https://github.com/Drakonkinst"
         }
     ],
-    "Website": "https://github.com/DrakonForge",
+    "Website": "https://github.com/DrakonForge/LastChance",
     "ServerVersion": "*",
-    "Dependencies": {},
-    "OptionalDependencies": {},
+    "Dependencies": {
+        
+    },
+    "OptionalDependencies": {
+        
+    },
     "DisabledByDefault": false,
     "IncludesAssetPack": true,
-    "Main": "io.github.drakonforge.ExamplePlugin"
+    "Main": "io.github.drakonforge.lastchance.LastChancePlugin"
 }
