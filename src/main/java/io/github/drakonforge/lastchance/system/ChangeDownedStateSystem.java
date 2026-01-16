@@ -10,6 +10,7 @@ import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.protocol.ClientCameraView;
 import com.hypixel.hytale.protocol.ServerCameraSettings;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
+import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
@@ -24,7 +25,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private static final Query<EntityStore> QUERY = Query.and(EntityStatMap.getComponentType(),
-            LastChance.getComponentType());
+            LastChance.getComponentType(), MovementManager.getComponentType(), PlayerRef.getComponentType());
 
     @NonNullDecl
     @Override
@@ -36,6 +37,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
     public void onComponentAdded(@NonNullDecl Ref<EntityStore> ref,
             @NonNullDecl DownedState downedState, @NonNullDecl Store<EntityStore> store,
             @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
+        // TODO: May need to split out the player-specific parts later (PlayerRef, MovementManager)
         EntityStatMap entityStatMapComponent = store.getComponent(ref, EntityStatMap.getComponentType());
         assert entityStatMapComponent != null;
         LOGGER.atInfo().log("Entering downed state");
@@ -44,7 +46,17 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
 
         // If player, set the camera
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-        if (playerRef != null && playerRef.isValid()) {
+        assert playerRef != null;
+
+        if (playerRef.isValid()) {
+            // Update movement
+            MovementManager movementManager = store.getComponent(ref, MovementManager.getComponentType());
+            assert movementManager != null;
+            movementManager.getSettings().baseSpeed = 0.0f;
+            movementManager.getSettings().jumpForce = 0.0f;
+            movementManager.update(playerRef.getPacketHandler());
+
+            // Update camera
             ServerCameraSettings settings = new ServerCameraSettings();
             settings.distance = 5.0f;
             settings.isFirstPerson = false;
@@ -74,7 +86,13 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
         lastChanceComponent.setDownedStateCooldown(3.0f);
 
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
-        if (playerRef != null && playerRef.isValid()) {
+        assert playerRef != null;
+        if (playerRef.isValid()) {
+            // Reset movement
+            MovementManager movementManager = store.getComponent(ref, MovementManager.getComponentType());
+            assert movementManager != null;
+            movementManager.resetDefaultsAndUpdate(ref, store);
+
             // Reset camera
             playerRef.getPacketHandler().writeNoCache(new SetServerCamera(ClientCameraView.Custom, false,
                     null));
