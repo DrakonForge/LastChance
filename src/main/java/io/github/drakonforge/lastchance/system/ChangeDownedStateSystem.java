@@ -7,9 +7,11 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.protocol.AnimationSlot;
 import com.hypixel.hytale.protocol.ClientCameraView;
 import com.hypixel.hytale.protocol.ServerCameraSettings;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
+import com.hypixel.hytale.server.core.entity.AnimationUtils;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
@@ -42,7 +44,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
         assert entityStatMapComponent != null;
         LOGGER.atInfo().log("Entering downed state");
         // TODO: Pull from config
-        entityStatMapComponent.setStatValue(DefaultEntityStatTypes.getHealth(), 10);
+        entityStatMapComponent.setStatValue(DefaultEntityStatTypes.getHealth(), 50); // TODO: Temp higher value for testing
 
         // If player, set the camera
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
@@ -58,6 +60,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
 
             // Update camera
             ServerCameraSettings settings = new ServerCameraSettings();
+            // TODO: Tweak to be more similar to default 3D, slightly zoomed out, and orbit around
             settings.distance = 5.0f;
             settings.isFirstPerson = false;
             settings.positionLerpSpeed = 0.2f;
@@ -65,6 +68,9 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             playerRef.getPacketHandler().writeNoCache(
                     new SetServerCamera(ClientCameraView.Custom, true, settings)
             );
+
+            // TODO: Make new animation
+            AnimationUtils.playAnimation(ref, AnimationSlot.Movement, "Crouch", true, store);
         }
     }
 
@@ -97,6 +103,8 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             playerRef.getPacketHandler().writeNoCache(new SetServerCamera(ClientCameraView.Custom, false,
                     null));
         }
+
+        AnimationUtils.stopAnimation(ref, AnimationSlot.Movement, true, store);
     }
 
     @NullableDecl
