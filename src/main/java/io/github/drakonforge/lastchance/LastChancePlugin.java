@@ -1,20 +1,23 @@
 package io.github.drakonforge.lastchance;
 
+import com.hypixel.hytale.component.ComponentRegistryProxy;
 import com.hypixel.hytale.component.ComponentType;
-import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.github.drakonforge.lastchance.command.LastChanceCommand;
+import io.github.drakonforge.lastchance.component.DownedState;
 import io.github.drakonforge.lastchance.component.LastChance;
-import io.github.drakonforge.lastchance.system.EnterDownedStateSystem;
+import io.github.drakonforge.lastchance.system.ChangeDownedStateSystem;
+import io.github.drakonforge.lastchance.system.ResetStateSystem;
+import io.github.drakonforge.lastchance.system.TriggerDownedStateSystem;
 import io.github.drakonforge.lastchance.system.RegisterLastChanceSystem;
+import io.github.drakonforge.lastchance.system.UpdateDownedStateSystem;
+import io.github.drakonforge.lastchance.system.UpdateLastChanceSystem;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 /**
@@ -27,6 +30,7 @@ public class LastChancePlugin extends JavaPlugin {
     private static LastChancePlugin instance;
 
     private ComponentType<EntityStore, LastChance> lastChanceComponentType;
+    private ComponentType<EntityStore, DownedState> downedStateComponentType;
 
     public static LastChancePlugin getInstance() {
         return instance;
@@ -36,26 +40,33 @@ public class LastChancePlugin extends JavaPlugin {
         super(init);
     }
 
-    // Fixing the race condition when creating new systems (query is null error) present in some build systems, including this one
-    private static final ScheduledExecutorService SCHEDULER =
-            Executors.newSingleThreadScheduledExecutor();
-
     @Override
     protected void setup() {
         instance = this;
         LOGGER.atInfo().log("Hello from " + this.getName() + " version " + this.getManifest().getVersion().toString());
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
 
-        this.lastChanceComponentType = this.getEntityStoreRegistry().registerComponent(
+        ComponentRegistryProxy<EntityStore> entityStoreRegistry = this.getEntityStoreRegistry();
+        this.lastChanceComponentType = entityStoreRegistry.registerComponent(
                 LastChance.class, LastChance::new);
+        this.downedStateComponentType = entityStoreRegistry.registerComponent(
+                DownedState.class, DownedState::new);
 
-        this.getEntityStoreRegistry().registerSystem(new RegisterLastChanceSystem());
-        this.getEntityStoreRegistry().registerSystem(new EnterDownedStateSystem());
+        entityStoreRegistry.registerSystem(new RegisterLastChanceSystem());
+        entityStoreRegistry.registerSystem(new TriggerDownedStateSystem());
+        entityStoreRegistry.registerSystem(new ChangeDownedStateSystem());
+        entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
+        entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
+        entityStoreRegistry.registerSystem(new ResetStateSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
     }
 
     public ComponentType<EntityStore, LastChance> getLastChanceComponentType() {
         return lastChanceComponentType;
+    }
+
+    public ComponentType<EntityStore, DownedState> getDownedStateComponentType() {
+        return downedStateComponentType;
     }
 }
