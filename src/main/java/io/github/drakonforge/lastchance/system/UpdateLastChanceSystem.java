@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 public class UpdateLastChanceSystem extends EntityTickingSystem<EntityStore> {
-    private static final float REGENERATE_SECONDS = 60;
+    private static final float REGENERATE_SECONDS = 60; // TODO: Pull from config
     private static final Query<EntityStore> QUERY = LastChance.getComponentType();
 
     @Override

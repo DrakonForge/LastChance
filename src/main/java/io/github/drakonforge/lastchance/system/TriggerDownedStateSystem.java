@@ -50,7 +50,6 @@ public class TriggerDownedStateSystem extends DamageEventSystem implements Entit
 
         if (damage.getAmount() < healthValue.get()) {
             return;
-
         }
 
         LastChance lastChanceComponent = archetypeChunk.getComponent(i, LastChance.getComponentType());
