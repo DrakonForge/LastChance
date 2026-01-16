@@ -50,7 +50,6 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             settings.isFirstPerson = false;
             settings.positionLerpSpeed = 0.2f;
             settings.displayCursor = false;
-            settings.allowPitchControls = false;
             playerRef.getPacketHandler().writeNoCache(
                     new SetServerCamera(ClientCameraView.Custom, true, settings)
             );

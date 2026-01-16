@@ -11,6 +11,7 @@ import io.github.drakonforge.lastchance.command.LastChanceCommand;
 import io.github.drakonforge.lastchance.component.DownedState;
 import io.github.drakonforge.lastchance.component.LastChance;
 import io.github.drakonforge.lastchance.system.ChangeDownedStateSystem;
+import io.github.drakonforge.lastchance.system.DeaggroDownedTargetSystem;
 import io.github.drakonforge.lastchance.system.ResetStateSystem;
 import io.github.drakonforge.lastchance.system.TriggerDownedStateSystem;
 import io.github.drakonforge.lastchance.system.RegisterLastChanceSystem;
@@ -58,6 +59,7 @@ public class LastChancePlugin extends JavaPlugin {
         entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
         entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
         entityStoreRegistry.registerSystem(new ResetStateSystem());
+        entityStoreRegistry.registerSystem(new DeaggroDownedTargetSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
     }
