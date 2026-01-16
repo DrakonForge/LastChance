@@ -12,7 +12,8 @@
     "Website": "https://github.com/DrakonForge/LastChance",
     "ServerVersion": "*",
     "Dependencies": {
-        
+        "Hytale:EntityStatsModule": "*",
+        "Hytale:DamageModule": "*"
     },
     "OptionalDependencies": {
         

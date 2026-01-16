@@ -10,7 +10,11 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.github.drakonforge.lastchance.command.LastChanceCommand;
 import io.github.drakonforge.lastchance.component.LastChance;
+import io.github.drakonforge.lastchance.system.EnterDownedStateSystem;
 import io.github.drakonforge.lastchance.system.RegisterLastChanceSystem;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 /**
@@ -32,6 +36,10 @@ public class LastChancePlugin extends JavaPlugin {
         super(init);
     }
 
+    // Fixing the race condition when creating new systems (query is null error) present in some build systems, including this one
+    private static final ScheduledExecutorService SCHEDULER =
+            Executors.newSingleThreadScheduledExecutor();
+
     @Override
     protected void setup() {
         instance = this;
@@ -41,12 +49,8 @@ public class LastChancePlugin extends JavaPlugin {
         this.lastChanceComponentType = this.getEntityStoreRegistry().registerComponent(
                 LastChance.class, LastChance::new);
 
-        // This register system doesn't work yet, so latching onto the PlayerReadyEvent instead
-        // this.getEntityStoreRegistry().registerSystem(new RegisterLastChanceSystem());
-        this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, event -> {
-            Ref<EntityStore> ref = event.getPlayerRef();
-            ref.getStore().addComponent(ref, this.lastChanceComponentType);
-        });
+        this.getEntityStoreRegistry().registerSystem(new RegisterLastChanceSystem());
+        this.getEntityStoreRegistry().registerSystem(new EnterDownedStateSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
     }

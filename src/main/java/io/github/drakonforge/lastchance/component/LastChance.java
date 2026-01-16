@@ -34,6 +34,10 @@ public class LastChance implements Component<EntityStore> {
         this.chancesRemaining = chancesRemaining;
     }
 
+    public boolean hasChancesRemaining() {
+        return chancesRemaining > 0;
+    }
+
     public int getMaxChances() {
         return maxChances;
     }
