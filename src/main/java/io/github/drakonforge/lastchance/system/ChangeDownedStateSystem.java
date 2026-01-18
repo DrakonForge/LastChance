@@ -8,8 +8,20 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.protocol.AnimationSlot;
+import com.hypixel.hytale.protocol.ApplyLookType;
+import com.hypixel.hytale.protocol.ApplyMovementType;
+import com.hypixel.hytale.protocol.AttachedToType;
+import com.hypixel.hytale.protocol.CanMoveType;
 import com.hypixel.hytale.protocol.ClientCameraView;
+import com.hypixel.hytale.protocol.Direction;
+import com.hypixel.hytale.protocol.MouseInputTargetType;
+import com.hypixel.hytale.protocol.MouseInputType;
+import com.hypixel.hytale.protocol.MovementForceRotationType;
+import com.hypixel.hytale.protocol.PositionDistanceOffsetType;
+import com.hypixel.hytale.protocol.PositionType;
+import com.hypixel.hytale.protocol.RotationType;
 import com.hypixel.hytale.protocol.ServerCameraSettings;
+import com.hypixel.hytale.protocol.Vector2f;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
 import com.hypixel.hytale.server.core.entity.AnimationUtils;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
@@ -61,10 +73,33 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             // Update camera
             ServerCameraSettings settings = new ServerCameraSettings();
             // TODO: Tweak to be more similar to default 3D, slightly zoomed out, and orbit around
+            // TODO: Defaults
+            settings.mouseInputTargetType = MouseInputTargetType.Any;
+            settings.movementForceRotationType = MovementForceRotationType.AttachedToHead;
+            settings.attachedToType = AttachedToType.LocalPlayer;
+            settings.positionDistanceOffsetType = PositionDistanceOffsetType.DistanceOffset;
+            settings.positionType = PositionType.AttachedToPlusOffset;
+            settings.rotationType = RotationType.AttachedToPlusOffset;
+            settings.canMoveType = CanMoveType.AttachedToLocalPlayer;
+            settings.applyMovementType = ApplyMovementType.CharacterController;
+            settings.applyLookType = ApplyLookType.LocalPlayerLookOrientation;
+            settings.mouseInputType = MouseInputType.LookAtTarget; // Mouse rotates camera
+
+            // TODO: Overrides
+            settings.positionLerpSpeed = 1.0f;
+            settings.rotationLerpSpeed = 1.0f;
+            settings.lookMultiplier = new Vector2f(1.0f, 1.0f);
             settings.distance = 5.0f;
-            settings.isFirstPerson = false;
-            settings.positionLerpSpeed = 0.2f;
-            settings.displayCursor = false;
+            settings.isFirstPerson = false; // Show the player instead of hiding them
+            settings.eyeOffset = true;
+            settings.sendMouseMotion = true;
+            settings.canMoveType = CanMoveType.Always;
+            settings.applyMovementType = ApplyMovementType.Position;
+            settings.allowPitchControls = true;
+            settings.movementForceRotation = new Direction(0.0f, 0.0f, 0.0f);
+            settings.applyLookType = ApplyLookType.Rotation; // Prevent player from rotating to look direction
+            settings.movementForceRotationType = MovementForceRotationType.CameraRotation; // Use camera rotation instead of following player look
+            settings.positionDistanceOffsetType = PositionDistanceOffsetType.DistanceOffsetRaycast; // Prevents clipping through walls
             playerRef.getPacketHandler().writeNoCache(
                     new SetServerCamera(ClientCameraView.Custom, true, settings)
             );
