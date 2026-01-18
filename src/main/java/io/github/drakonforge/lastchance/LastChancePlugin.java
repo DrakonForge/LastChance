@@ -55,24 +55,13 @@ public class LastChancePlugin extends JavaPlugin {
     @Override
     protected void setup() {
         instance = this;
-        LOGGER.atInfo().log("Hello from " + this.getName() + " version " + this.getManifest().getVersion().toString());
-        LOGGER.atInfo().log("Setting up plugin " + this.getName());
-        LOGGER.atInfo().log("Is my new code running for " + this.getName());
+        LOGGER.atInfo().log("Setting up plugin " + this.getName() + " version " + this.getManifest().getVersion().toString());
 
         ComponentRegistryProxy<EntityStore> entityStoreRegistry = this.getEntityStoreRegistry();
         this.lastChanceComponentType = entityStoreRegistry.registerComponent(
                 LastChance.class, LastChance::new);
         this.downedStateComponentType = entityStoreRegistry.registerComponent(
                 DownedState.class, DownedState::new);
-
-        entityStoreRegistry.registerSystem(new RegisterLastChanceSystem());
-        entityStoreRegistry.registerSystem(new TriggerDownedStateSystem());
-        entityStoreRegistry.registerSystem(new ChangeDownedStateSystem());
-        entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
-        entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
-        entityStoreRegistry.registerSystem(new ResetStateSystem());
-        // entityStoreRegistry.registerSystem(new DeaggroDownedTargetSystem());
-        // entityStoreRegistry.registerSystem(new OverrideMovementStateSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
 
@@ -90,6 +79,22 @@ public class LastChancePlugin extends JavaPlugin {
         //    }
         //    return false;
         // });
+    }
+
+    @Override
+    protected void start() {
+        // Due to race conditions it's better to register systems here, or introduce a dependency
+        // on Hytale core modules in manifest.json
+        LOGGER.atInfo().log("Starting plugin " + this.getName());
+        ComponentRegistryProxy<EntityStore> entityStoreRegistry = this.getEntityStoreRegistry();
+        entityStoreRegistry.registerSystem(new RegisterLastChanceSystem());
+        entityStoreRegistry.registerSystem(new TriggerDownedStateSystem());
+        entityStoreRegistry.registerSystem(new ChangeDownedStateSystem());
+        entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
+        entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
+        entityStoreRegistry.registerSystem(new ResetStateSystem());
+        // entityStoreRegistry.registerSystem(new DeaggroDownedTargetSystem());
+        // entityStoreRegistry.registerSystem(new OverrideMovementStateSystem());
     }
 
     public ComponentType<EntityStore, LastChance> getLastChanceComponentType() {

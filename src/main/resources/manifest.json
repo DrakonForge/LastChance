@@ -12,8 +12,7 @@
     "Website": "https://github.com/DrakonForge/LastChance",
     "ServerVersion": "*",
     "Dependencies": {
-        "Hytale:DamageModule": "*",
-        "Hytale:NPCCombatActionEvaluator": "*"
+        
     },
     "OptionalDependencies": {
         
