@@ -47,15 +47,14 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
     private static ServerCameraSettings createOrbitingCamera(Vector3f startingDirection) {
         ServerCameraSettings settings = new ServerCameraSettings();
 
-        settings.rotationLerpSpeed = 0.5f;
         settings.isFirstPerson = false; // Show the player instead of hiding them
         settings.applyMovementType = ApplyMovementType.Position; // Prevent player from moving with character controller
 
         // Distance offset
-        settings.distance = 4.0f; // Offset the camera a short distance away
+        settings.distance = 3.0f; // Offset the camera a short distance away
         settings.eyeOffset = true; // Position the camera from the player's eye position
+        settings.positionType = PositionType.AttachedToPlusOffset;
         settings.positionDistanceOffsetType = PositionDistanceOffsetType.DistanceOffsetRaycast; // Prevents clipping through walls
-        settings.position = new Position(10.0f, -10.0f, 0.0f);
 
         // Make camera orbit around the player
         settings.applyLookType = ApplyLookType.Rotation; // Prevent player from rotating to look direction
@@ -67,7 +66,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
                 startingDirection.getPitch(),
                 startingDirection.getRoll()
         );
-        settings.lookMultiplier = new Vector2f(0.9f, 0.9f); // Set camera orbiting speed
+        settings.lookMultiplier = new Vector2f(0.75f, 0.75f); // Set camera orbiting speed
 
         return settings;
     }
@@ -105,6 +104,11 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             // Update camera
             Vector3f headRotation = playerRef.getHeadRotation().clone();
             ServerCameraSettings settings = createOrbitingCamera(headRotation);
+
+            // Some settings to make the player turn instead of the camera, as an experiment
+            // settings.applyLookType = ApplyLookType.LocalPlayerLookOrientation;
+            // settings.movementForceRotationType = MovementForceRotationType.Custom;
+            // settings.rotationType = RotationType.Custom;
 
             // Send packet
             playerRef.getPacketHandler().writeNoCache(
