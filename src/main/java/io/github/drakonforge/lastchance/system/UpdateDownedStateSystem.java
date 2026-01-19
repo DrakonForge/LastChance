@@ -6,6 +6,8 @@ import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
+import com.hypixel.hytale.protocol.AnimationSlot;
+import com.hypixel.hytale.server.core.entity.AnimationUtils;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.github.drakonforge.lastchance.component.DownedState;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
@@ -22,6 +24,9 @@ public class UpdateDownedStateSystem extends EntityTickingSystem<EntityStore> {
         DownedState downedState = archetypeChunk.getComponent(i, DownedState.getComponentType());
         assert downedState != null;
         downedState.decrementTimeRemaining(deltaTime);
+
+        // AnimationUtils.playAnimation(archetypeChunk.getReferenceTo(i), AnimationSlot.Movement, "Crouch", true, store);
+        // AnimationUtils.playAnimation(archetypeChunk.getReferenceTo(i), AnimationSlot.Status, "Crouch", true, store);
 
         if (downedState.shouldExpire()) {
             Ref<EntityStore> ref = archetypeChunk.getReferenceTo(i);

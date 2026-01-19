@@ -7,6 +7,8 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.math.vector.Transform;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.protocol.AnimationSlot;
 import com.hypixel.hytale.protocol.ApplyLookType;
 import com.hypixel.hytale.protocol.ApplyMovementType;
@@ -17,6 +19,7 @@ import com.hypixel.hytale.protocol.Direction;
 import com.hypixel.hytale.protocol.MouseInputTargetType;
 import com.hypixel.hytale.protocol.MouseInputType;
 import com.hypixel.hytale.protocol.MovementForceRotationType;
+import com.hypixel.hytale.protocol.Position;
 import com.hypixel.hytale.protocol.PositionDistanceOffsetType;
 import com.hypixel.hytale.protocol.PositionType;
 import com.hypixel.hytale.protocol.RotationType;
@@ -41,6 +44,34 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
     private static final Query<EntityStore> QUERY = Query.and(EntityStatMap.getComponentType(),
             LastChance.getComponentType(), MovementManager.getComponentType(), PlayerRef.getComponentType());
 
+    private static ServerCameraSettings createOrbitingCamera(Vector3f startingDirection) {
+        ServerCameraSettings settings = new ServerCameraSettings();
+
+        settings.rotationLerpSpeed = 0.5f;
+        settings.isFirstPerson = false; // Show the player instead of hiding them
+        settings.applyMovementType = ApplyMovementType.Position; // Prevent player from moving with character controller
+
+        // Distance offset
+        settings.distance = 4.0f; // Offset the camera a short distance away
+        settings.eyeOffset = true; // Position the camera from the player's eye position
+        settings.positionDistanceOffsetType = PositionDistanceOffsetType.DistanceOffsetRaycast; // Prevents clipping through walls
+        settings.position = new Position(10.0f, -10.0f, 0.0f);
+
+        // Make camera orbit around the player
+        settings.applyLookType = ApplyLookType.Rotation; // Prevent player from rotating to look direction
+        settings.movementForceRotationType = MovementForceRotationType.CameraRotation; // Use camera rotation instead of following player look
+        settings.rotationType = RotationType.Custom; // Allows rotation without player turning
+        // Set starting rotation
+        settings.rotation = new Direction(
+                startingDirection.getYaw(),
+                startingDirection.getPitch(),
+                startingDirection.getRoll()
+        );
+        settings.lookMultiplier = new Vector2f(0.9f, 0.9f); // Set camera orbiting speed
+
+        return settings;
+    }
+
     @NonNullDecl
     @Override
     public ComponentType<EntityStore, DownedState> componentType() {
@@ -64,6 +95,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
 
         if (playerRef.isValid()) {
             // Update movement
+            // Not sure if this is actually needed since ApplyMovementType.Position seems to do the trick
             MovementManager movementManager = store.getComponent(ref, MovementManager.getComponentType());
             assert movementManager != null;
             movementManager.getSettings().baseSpeed = 0.0f;
@@ -71,35 +103,10 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             movementManager.update(playerRef.getPacketHandler());
 
             // Update camera
-            ServerCameraSettings settings = new ServerCameraSettings();
-            // TODO: Tweak to be more similar to default 3D, slightly zoomed out, and orbit around
-            // TODO: Defaults
-            settings.mouseInputTargetType = MouseInputTargetType.Any;
-            settings.movementForceRotationType = MovementForceRotationType.AttachedToHead;
-            settings.attachedToType = AttachedToType.LocalPlayer;
-            settings.positionDistanceOffsetType = PositionDistanceOffsetType.DistanceOffset;
-            settings.positionType = PositionType.AttachedToPlusOffset;
-            settings.rotationType = RotationType.AttachedToPlusOffset;
-            settings.canMoveType = CanMoveType.AttachedToLocalPlayer;
-            settings.applyMovementType = ApplyMovementType.CharacterController;
-            settings.applyLookType = ApplyLookType.LocalPlayerLookOrientation;
-            settings.mouseInputType = MouseInputType.LookAtTarget; // Mouse rotates camera
+            Vector3f headRotation = playerRef.getHeadRotation().clone();
+            ServerCameraSettings settings = createOrbitingCamera(headRotation);
 
-            // TODO: Overrides
-            settings.positionLerpSpeed = 1.0f;
-            settings.rotationLerpSpeed = 1.0f;
-            settings.lookMultiplier = new Vector2f(1.0f, 1.0f);
-            settings.distance = 5.0f;
-            settings.isFirstPerson = false; // Show the player instead of hiding them
-            settings.eyeOffset = true;
-            settings.sendMouseMotion = true;
-            settings.canMoveType = CanMoveType.Always;
-            settings.applyMovementType = ApplyMovementType.Position;
-            settings.allowPitchControls = true;
-            settings.movementForceRotation = new Direction(0.0f, 0.0f, 0.0f);
-            settings.applyLookType = ApplyLookType.Rotation; // Prevent player from rotating to look direction
-            settings.movementForceRotationType = MovementForceRotationType.CameraRotation; // Use camera rotation instead of following player look
-            settings.positionDistanceOffsetType = PositionDistanceOffsetType.DistanceOffsetRaycast; // Prevents clipping through walls
+            // Send packet
             playerRef.getPacketHandler().writeNoCache(
                     new SetServerCamera(ClientCameraView.Custom, true, settings)
             );

@@ -12,7 +12,7 @@ import io.github.drakonforge.lastchance.component.LastChance;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
-public class ResetStateSystem extends OnRespawnSystem {
+public class ResetStateOnRespawnSystem extends OnRespawnSystem {
     // TODO: Separate into two possibly
     private static final Query<EntityStore> QUERY =
             LastChance.getComponentType();

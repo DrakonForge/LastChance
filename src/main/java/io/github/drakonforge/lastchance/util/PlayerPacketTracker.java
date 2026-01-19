@@ -87,7 +87,7 @@ public class PlayerPacketTracker {
                 }
 
                 if (!sb.isEmpty()) {
-                    LOGGER.atInfo().log("To " + player + ":\n" + sb.toString());
+                    LOGGER.atInfo().log("To " + player + ":\n" + sb);
                 }
             }
         }, 3, 3, TimeUnit.SECONDS);
