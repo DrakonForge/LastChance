@@ -62,6 +62,12 @@ public class LastChancePlugin extends JavaPlugin {
                 LastChance.class, LastChance::new);
         this.downedStateComponentType = entityStoreRegistry.registerComponent(
                 DownedState.class, DownedState::new);
+        entityStoreRegistry.registerSystem(new RegisterLastChanceSystem());
+        entityStoreRegistry.registerSystem(new TriggerDownedStateSystem());
+        entityStoreRegistry.registerSystem(new ChangeDownedStateSystem());
+        entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
+        entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
+        entityStoreRegistry.registerSystem(new ResetStateSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
 
@@ -79,22 +85,8 @@ public class LastChancePlugin extends JavaPlugin {
         //    }
         //    return false;
         // });
-    }
 
-    @Override
-    protected void start() {
-        // Due to race conditions it's better to register systems here, or introduce a dependency
-        // on Hytale core modules in manifest.json
-        LOGGER.atInfo().log("Starting plugin " + this.getName());
-        ComponentRegistryProxy<EntityStore> entityStoreRegistry = this.getEntityStoreRegistry();
-        entityStoreRegistry.registerSystem(new RegisterLastChanceSystem());
-        entityStoreRegistry.registerSystem(new TriggerDownedStateSystem());
-        entityStoreRegistry.registerSystem(new ChangeDownedStateSystem());
-        entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
-        entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
-        entityStoreRegistry.registerSystem(new ResetStateSystem());
-        // entityStoreRegistry.registerSystem(new DeaggroDownedTargetSystem());
-        // entityStoreRegistry.registerSystem(new OverrideMovementStateSystem());
+        LOGGER.atInfo().log("Finished setting up plugin " + this.getName());
     }
 
     public ComponentType<EntityStore, LastChance> getLastChanceComponentType() {

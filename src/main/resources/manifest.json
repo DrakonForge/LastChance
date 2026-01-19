@@ -1,5 +1,5 @@
 {
-    "Group": "io.github.drakonforge",
+    "Group": "DrakonForge",
     "Name": "LastChance",
     "Version": "1.0.0",
     "Description": "An example plugin for Hytale modding.",
@@ -12,7 +12,7 @@
     "Website": "https://github.com/DrakonForge/LastChance",
     "ServerVersion": "*",
     "Dependencies": {
-        
+        "Hytale:DamageModule": "*"
     },
     "OptionalDependencies": {
         
