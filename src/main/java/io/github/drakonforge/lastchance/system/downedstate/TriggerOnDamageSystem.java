@@ -1,4 +1,4 @@
-package io.github.drakonforge.lastchance.system;
+package io.github.drakonforge.lastchance.system.downedstate;
 
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -27,7 +27,7 @@ import java.util.Set;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
-public class TriggerDownedStateSystem extends DamageEventSystem implements EntityStatsSystems.StatModifyingSystem  {
+public class TriggerOnDamageSystem extends DamageEventSystem implements EntityStatsSystems.StatModifyingSystem  {
     private static final Query<EntityStore> QUERY = Query.and(EntityStatMap.getComponentType(),
             LastChance.getComponentType(), Query.not(DownedState.getComponentType()));
     private static final Set<Dependency<EntityStore>> DEPENDENCIES =

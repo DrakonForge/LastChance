@@ -14,7 +14,6 @@ import io.github.drakonforge.lastchance.component.LastChance;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
-// Currently doesn't work due to null pointer exception
 public class RegisterLastChanceSystem extends HolderSystem<EntityStore> {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 

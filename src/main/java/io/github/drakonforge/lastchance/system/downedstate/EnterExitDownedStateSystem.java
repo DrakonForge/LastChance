@@ -1,4 +1,4 @@
-package io.github.drakonforge.lastchance.system;
+package io.github.drakonforge.lastchance.system.downedstate;
 
 import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.ComponentType;
@@ -7,26 +7,22 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.protocol.AnimationSlot;
 import com.hypixel.hytale.protocol.ApplyLookType;
 import com.hypixel.hytale.protocol.ApplyMovementType;
-import com.hypixel.hytale.protocol.AttachedToType;
-import com.hypixel.hytale.protocol.CanMoveType;
 import com.hypixel.hytale.protocol.ClientCameraView;
 import com.hypixel.hytale.protocol.Direction;
-import com.hypixel.hytale.protocol.MouseInputTargetType;
-import com.hypixel.hytale.protocol.MouseInputType;
 import com.hypixel.hytale.protocol.MovementForceRotationType;
-import com.hypixel.hytale.protocol.Position;
 import com.hypixel.hytale.protocol.PositionDistanceOffsetType;
 import com.hypixel.hytale.protocol.PositionType;
 import com.hypixel.hytale.protocol.RotationType;
 import com.hypixel.hytale.protocol.ServerCameraSettings;
 import com.hypixel.hytale.protocol.Vector2f;
 import com.hypixel.hytale.protocol.packets.camera.SetServerCamera;
+import com.hypixel.hytale.server.core.asset.type.entityeffect.config.EntityEffect;
 import com.hypixel.hytale.server.core.entity.AnimationUtils;
+import com.hypixel.hytale.server.core.entity.effect.EffectControllerComponent;
 import com.hypixel.hytale.server.core.entity.entities.player.movement.MovementManager;
 import com.hypixel.hytale.server.core.modules.entitystats.EntityStatMap;
 import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntityStatTypes;
@@ -38,17 +34,18 @@ import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 
-public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, DownedState> {
+public class EnterExitDownedStateSystem extends RefChangeSystem<EntityStore, DownedState> {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     private static final Query<EntityStore> QUERY = Query.and(EntityStatMap.getComponentType(),
-            LastChance.getComponentType(), MovementManager.getComponentType(), PlayerRef.getComponentType());
+            LastChance.getComponentType(), MovementManager.getComponentType(), PlayerRef.getComponentType(), EffectControllerComponent.getComponentType());
 
     private static ServerCameraSettings createOrbitingCamera(Vector3f startingDirection) {
         ServerCameraSettings settings = new ServerCameraSettings();
 
         settings.isFirstPerson = false; // Show the player instead of hiding them
         settings.applyMovementType = ApplyMovementType.Position; // Prevent player from moving with character controller
+        settings.skipCharacterPhysics = false;
 
         // Distance offset
         settings.distance = 3.0f; // Offset the camera a short distance away
@@ -86,7 +83,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
         assert entityStatMapComponent != null;
         LOGGER.atInfo().log("Entering downed state");
         // TODO: Pull from config
-        entityStatMapComponent.setStatValue(DefaultEntityStatTypes.getHealth(), 50); // TODO: Temp higher value for testing
+        entityStatMapComponent.setStatValue(DefaultEntityStatTypes.getHealth(), 25); // TODO: Temp higher value for testing
 
         // If player, set the camera
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
@@ -134,6 +131,7 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
             @NonNullDecl CommandBuffer<EntityStore> commandBuffer) {
         LastChance lastChanceComponent = store.getComponent(ref, LastChance.getComponentType());
         assert lastChanceComponent != null;
+        LOGGER.atInfo().log("Leaving downed state");
         // TODO: Pull from config
         lastChanceComponent.setDownedStateCooldown(3.0f);
 
@@ -151,6 +149,12 @@ public class ChangeDownedStateSystem extends RefChangeSystem<EntityStore, Downed
         }
 
         AnimationUtils.stopAnimation(ref, AnimationSlot.Movement, true, store);
+
+        // Remove stamina effects
+        int effectIndex = EntityEffect.getAssetMap().getIndex("Stamina_Broken");
+        EffectControllerComponent effectControllerComponent = store.getComponent(ref, EffectControllerComponent.getComponentType());
+        assert effectControllerComponent != null;
+        effectControllerComponent.removeEffect(ref, effectIndex, store);
     }
 
     @NullableDecl

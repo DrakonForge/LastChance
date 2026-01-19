@@ -3,6 +3,8 @@ package io.github.drakonforge.lastchance;
 import com.hypixel.hytale.component.ComponentRegistryProxy;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;
+import com.hypixel.hytale.server.core.io.adapter.PacketFilter;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
@@ -10,11 +12,12 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.github.drakonforge.lastchance.command.LastChanceCommand;
 import io.github.drakonforge.lastchance.component.DownedState;
 import io.github.drakonforge.lastchance.component.LastChance;
-import io.github.drakonforge.lastchance.system.ChangeDownedStateSystem;
-import io.github.drakonforge.lastchance.system.ResetStateOnRespawnSystem;
-import io.github.drakonforge.lastchance.system.TriggerDownedStateSystem;
+import io.github.drakonforge.lastchance.system.downedstate.EnterExitDownedStateSystem;
+import io.github.drakonforge.lastchance.system.ResetOnRespawnSystem;
+import io.github.drakonforge.lastchance.system.downedstate.ManageParryStateSystem;
+import io.github.drakonforge.lastchance.system.downedstate.TriggerOnDamageSystem;
 import io.github.drakonforge.lastchance.system.RegisterLastChanceSystem;
-import io.github.drakonforge.lastchance.system.UpdateDownedStateSystem;
+import io.github.drakonforge.lastchance.system.downedstate.RemoveOnExpireSystem;
 import io.github.drakonforge.lastchance.system.UpdateLastChanceSystem;
 import javax.annotation.Nonnull;
 
@@ -29,6 +32,8 @@ public class LastChancePlugin extends JavaPlugin {
 
     private ComponentType<EntityStore, LastChance> lastChanceComponentType;
     private ComponentType<EntityStore, DownedState> downedStateComponentType;
+
+    private PacketFilter inboundFilter;
 
     public static LastChancePlugin getInstance() {
         return instance;
@@ -49,31 +54,37 @@ public class LastChancePlugin extends JavaPlugin {
         this.downedStateComponentType = entityStoreRegistry.registerComponent(
                 DownedState.class, DownedState::new);
         entityStoreRegistry.registerSystem(new RegisterLastChanceSystem());
-        entityStoreRegistry.registerSystem(new TriggerDownedStateSystem());
-        entityStoreRegistry.registerSystem(new ChangeDownedStateSystem());
+        entityStoreRegistry.registerSystem(new TriggerOnDamageSystem());
+        entityStoreRegistry.registerSystem(new EnterExitDownedStateSystem());
         entityStoreRegistry.registerSystem(new UpdateLastChanceSystem());
-        entityStoreRegistry.registerSystem(new UpdateDownedStateSystem());
-        // entityStoreRegistry.registerSystem(new OverrideMovementStateSystem()); // Not sure this actually helps anything, might introduce more jitter
-        entityStoreRegistry.registerSystem(new ResetStateOnRespawnSystem());
+        entityStoreRegistry.registerSystem(new RemoveOnExpireSystem());
+        entityStoreRegistry.registerSystem(new ManageParryStateSystem());
+        entityStoreRegistry.registerSystem(new ResetOnRespawnSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
 
         // PlayerPacketTracker.registerPacketCounters();
-        // PacketAdapters.registerInbound((PlayerPacketFilter) (player,  packet) -> {
-        //    if (packet instanceof ClientMovement movementPacket) {
-        //        return true;
-        //        // if (movementPacket.movementStates != null) {
-        //        //     if (!movementPacket.movementStates.idle) {
-        //        //         LOGGER.atInfo().log("Movement input received!");
-        //        //         return true;
-        //        //     }
-        //        // }
-        //        // LOGGER.atInfo().log("Movement input received 2!");
+        // inboundFilter = PacketAdapters.registerInbound((PlayerPacketFilter) (player,  packet) -> {
+        //    if (packet instanceof SyncInteractionChains syncInteractionChainsPacket) {
+        //        SyncInteractionChain[] updates = syncInteractionChainsPacket.updates;
+        //        for (SyncInteractionChain item : updates) {
+        //            InteractionType interactionType = item.interactionType;
+        //            if (interactionType == InteractionType.Secondary) {
+        //                LOGGER.atInfo().log("Secondary input received!");
+        //            }
+        //        }
         //    }
         //    return false;
         // });
 
         LOGGER.atInfo().log("Finished setting up plugin " + this.getName());
+    }
+
+    @Override
+    protected void shutdown() {
+        if (inboundFilter != null) {
+            PacketAdapters.deregisterInbound(inboundFilter);
+        }
     }
 
     public ComponentType<EntityStore, LastChance> getLastChanceComponentType() {
