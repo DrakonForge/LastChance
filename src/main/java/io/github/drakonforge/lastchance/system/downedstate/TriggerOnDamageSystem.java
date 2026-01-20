@@ -59,7 +59,7 @@ public class TriggerOnDamageSystem extends DamageEventSystem implements EntitySt
         }
 
         Ref<EntityStore> ref = archetypeChunk.getReferenceTo(i);
-        damage.setCancelled(true);
+        damage.setAmount(0);
         // TODO: Pull from mod config
         commandBuffer.addComponent(ref, LastChancePlugin.getInstance().getDownedStateComponentType(), new DownedState(5.0f));
     }

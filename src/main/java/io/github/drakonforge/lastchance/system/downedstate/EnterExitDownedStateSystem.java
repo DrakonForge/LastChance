@@ -83,7 +83,7 @@ public class EnterExitDownedStateSystem extends RefChangeSystem<EntityStore, Dow
         assert entityStatMapComponent != null;
         LOGGER.atInfo().log("Entering downed state");
         // TODO: Pull from config
-        entityStatMapComponent.setStatValue(DefaultEntityStatTypes.getHealth(), 25); // TODO: Temp higher value for testing
+        entityStatMapComponent.setStatValue(DefaultEntityStatTypes.getHealth(), 10); // TODO: Temp higher value for testing
 
         // If player, set the camera
         PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());

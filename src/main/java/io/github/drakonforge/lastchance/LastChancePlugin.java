@@ -15,6 +15,7 @@ import io.github.drakonforge.lastchance.component.LastChance;
 import io.github.drakonforge.lastchance.system.downedstate.EnterExitDownedStateSystem;
 import io.github.drakonforge.lastchance.system.ResetOnRespawnSystem;
 import io.github.drakonforge.lastchance.system.downedstate.ManageParryStateSystem;
+import io.github.drakonforge.lastchance.system.downedstate.ParrySuccessSystem;
 import io.github.drakonforge.lastchance.system.downedstate.TriggerOnDamageSystem;
 import io.github.drakonforge.lastchance.system.RegisterLastChanceSystem;
 import io.github.drakonforge.lastchance.system.downedstate.RemoveOnExpireSystem;
@@ -60,6 +61,7 @@ public class LastChancePlugin extends JavaPlugin {
         entityStoreRegistry.registerSystem(new RemoveOnExpireSystem());
         entityStoreRegistry.registerSystem(new ManageParryStateSystem());
         entityStoreRegistry.registerSystem(new ResetOnRespawnSystem());
+        entityStoreRegistry.registerSystem(new ParrySuccessSystem());
 
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
 

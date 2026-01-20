@@ -23,7 +23,7 @@ public class ManageParryStateSystem extends EntityTickingSystem<EntityStore> {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private static final Query<EntityStore> QUERY = Query.and(DownedState.getComponentType(),
             DamageDataComponent.getComponentType(), EffectControllerComponent.getComponentType());
-    private static final long MAX_PARRY_TIME_MS = 500;
+    private static final long MAX_PARRY_TIME_MS = 600;
     private static final long PARRY_COOLDOWN_MS = 1000;
     private static final float MS_TO_SECONDS = 1.0f / 1000.0f;
 
