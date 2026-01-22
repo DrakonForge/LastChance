@@ -3,8 +3,12 @@ package io.github.drakonforge.lastchance;
 import com.hypixel.hytale.component.ComponentRegistryProxy;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger;
+import com.hypixel.hytale.protocol.InteractionType;
+import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChain;
+import com.hypixel.hytale.protocol.packets.interaction.SyncInteractionChains;
 import com.hypixel.hytale.server.core.io.adapter.PacketAdapters;
 import com.hypixel.hytale.server.core.io.adapter.PacketFilter;
+import com.hypixel.hytale.server.core.io.adapter.PlayerPacketFilter;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 
@@ -66,18 +70,18 @@ public class LastChancePlugin extends JavaPlugin {
         this.getCommandRegistry().registerCommand(new LastChanceCommand());
 
         // PlayerPacketTracker.registerPacketCounters();
-        // inboundFilter = PacketAdapters.registerInbound((PlayerPacketFilter) (player,  packet) -> {
-        //    if (packet instanceof SyncInteractionChains syncInteractionChainsPacket) {
-        //        SyncInteractionChain[] updates = syncInteractionChainsPacket.updates;
-        //        for (SyncInteractionChain item : updates) {
-        //            InteractionType interactionType = item.interactionType;
-        //            if (interactionType == InteractionType.Secondary) {
-        //                LOGGER.atInfo().log("Secondary input received!");
-        //            }
-        //        }
-        //    }
-        //    return false;
-        // });
+        inboundFilter = PacketAdapters.registerInbound((PlayerPacketFilter) (player,  packet) -> {
+           if (packet instanceof SyncInteractionChains syncInteractionChainsPacket) {
+               SyncInteractionChain[] updates = syncInteractionChainsPacket.updates;
+               for (SyncInteractionChain item : updates) {
+                   InteractionType interactionType = item.interactionType;
+                   if (interactionType == InteractionType.Primary) {
+                       // LOGGER.atInfo().log("Primary input received!");
+                   }
+               }
+           }
+           return false;
+        });
 
         LOGGER.atInfo().log("Finished setting up plugin " + this.getName());
     }

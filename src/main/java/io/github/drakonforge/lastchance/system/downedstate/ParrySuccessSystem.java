@@ -24,13 +24,14 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntitySta
 import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import io.github.drakonforge.lastchance.component.DownedState;
+import io.github.drakonforge.lastchance.component.LastChance;
 import java.util.Set;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 public class ParrySuccessSystem extends DamageEventSystem {
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private static final Query<EntityStore> QUERY = Query.and(DownedState.getComponentType(), EntityStatMap.getComponentType(), TransformComponent.getComponentType());
+    private static final Query<EntityStore> QUERY = Query.and(LastChance.getComponentType(), DownedState.getComponentType(), EntityStatMap.getComponentType(), TransformComponent.getComponentType());
     private static final Set<Dependency<EntityStore>> DEPENDENCIES =
             Set.of(new SystemGroupDependency<>(Order.AFTER, DamageModule.get().getGatherDamageGroup()), new SystemGroupDependency<>(Order.AFTER, DamageModule.get().getFilterDamageGroup()), new SystemDependency<>(Order.BEFORE, ApplyDamage.class));
     private static final float HEALTH_REGAIN = 40; // TODO: Pull from config
@@ -56,7 +57,12 @@ public class ParrySuccessSystem extends DamageEventSystem {
             @NonNullDecl Store<EntityStore> store,
             @NonNullDecl CommandBuffer<EntityStore> commandBuffer, @NonNullDecl Damage damage) {
         EntityStatMap entityStatMapComponent = archetypeChunk.getComponent(i, EntityStatMap.getComponentType());
+        TransformComponent transformComponent = archetypeChunk.getComponent(i, TransformComponent.getComponentType());
+        LastChance lastChanceComponent = archetypeChunk.getComponent(i, LastChance.getComponentType());
         assert entityStatMapComponent != null;
+        assert transformComponent != null;
+        assert lastChanceComponent != null;
+
         entityStatMapComponent.addStatValue(DefaultEntityStatTypes.getHealth(), HEALTH_REGAIN);
         entityStatMapComponent.maximizeStatValue(DefaultEntityStatTypes.getStamina());
         commandBuffer.removeComponent(archetypeChunk.getReferenceTo(i), DownedState.getComponentType());
@@ -64,11 +70,11 @@ public class ParrySuccessSystem extends DamageEventSystem {
         // Play sound
         // TODO: Change sound
         int index = SoundEvent.getAssetMap().getIndex("SFX_Light_Melee_T2_Guard_Hit");
-        TransformComponent transformComponent = archetypeChunk.getComponent(i, TransformComponent.getComponentType());
-        assert transformComponent != null;
+
         Vector3d pos = transformComponent.getPosition();
         SoundUtil.playSoundEvent3d(index, SoundCategory.SFX, pos.getX(), pos.getY(), pos.getZ(), 3.0f, 1.2f, store);
 
+        lastChanceComponent.setChancesRemaining(lastChanceComponent.getChancesRemaining() - 1);
     }
 
     @NullableDecl
